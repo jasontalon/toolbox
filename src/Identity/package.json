@@ -1,0 +1,10 @@
+{
+  "name": "identity",
+  "version": "1.0.0",
+  "scripts": {
+    "watch-api:postbuild": "nodemon -L --watch bin/ --exec dotnet bin/Debug/netcoreapp3.1/Identity.dll"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.4"
+  }
+}

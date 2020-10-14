@@ -1,0 +1,36 @@
+version: '3'
+services:
+  db:
+    image: mcr.microsoft.com/mssql/server:2019-CU8-ubuntu-16.04
+    user: root
+    volumes:
+      - ./.mssql/data:/var/opt/mssql/data
+      - ./.mssql/log:/var/opt/mssql/log
+      - ./.mssql/secrets:/var/opt/mssql/secrets    
+    ports:
+      - "7433:1433"
+    restart: unless-stopped
+    environment: 
+      SA_PASSWORD: Password123!
+      ACCEPT_EULA: Y
+  identity:
+    build: 
+      context: './src/Identity'
+      dockerfile: 'Dockerfile.dev'
+    depends_on: 
+      - db
+    volumes:
+      - ./src/Identity:/app
+    ports:
+      - "7000:443"
+    restart: unless-stopped
+    environment:
+      ConnectionStrings__DefaultConnection: "server=db;database=Identity;user id=sa;password=Password123!"
+      ASPNETCORE_URLS: https://+:443;http://+:80
+      ASPNETCORE_ENVIRONMENT: Development
+      #how to setup local https certificate (first time setup)
+      #run src/Identity/generate_certificate.bat (this is a one-time setup only)
+      #https://docs.microsoft.com/en-us/aspnet/core/security/docker-https?view=aspnetcore-3.1
+      ASPNETCORE_Kestrel__Certificates__Default__Path: certificate.pfx
+      ASPNETCORE_Kestrel__Certificates__Default__Password: Password123!      
+    command: bash -c "npm install && npm run watch-api:postbuild"
